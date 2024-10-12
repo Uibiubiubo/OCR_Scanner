@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Cards 用户管理系统 - 登录</title>
+    <style>
+        /* 基本设置 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #FFFFFF;
+        }
+
+        /* 登录容器 */
+        .login-container {
+            width: 300px;
+            padding: 30px 20px; /* 左右填充确保输入框与容器间距一致 */
+            border-radius: 8px;
+            background-color: #1E1E1E;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        /* 标题 */
+        .login-container h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #FFFFFF;
+            text-align: center; /* 确保标题居中 */
+        }
+
+        /* 输入框样式 */
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: calc(100% - 20px); /* 确保宽度与容器填充保持一致 */
+            padding: 10px;
+            margin: 10px auto; /* 自动居中 */
+            border-radius: 4px;
+            border: 1px solid #333;
+            background-color: #2E2E2E;
+            color: #FFFFFF;
+            display: block;
+        }
+
+        /* 登录按钮 */
+        .login-container button {
+            width: 80%; /* 按钮宽度为 80% */
+            padding: 10px;
+            border-radius: 4px;
+            border: none;
+            background-color: #3B82F6;
+            color: #FFFFFF;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 15px;
+            display: block;
+            margin: 15px auto 0 auto; /* 居中对齐按钮 */
+        }
+
+        /* 鼠标悬停效果 */
+        .login-container button:hover {
+            background-color: #2563EB;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>OCR Cards 用户管理系统</h2>
+        <form id="loginForm" action="/login" method="POST">
+            <input type="text" id="userName" name="userName" placeholder="用户名" required>
+            <input type="password" id="password" name="password" placeholder="密码" required>
+            <button type="submit">登录</button>
+        </form>
+    </div>
+</body>
+</html>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // 阻止表单的默认提交行为
+
+        // 获取用户输入的用户名和密码
+        var userName = document.getElementById('userName').value;
+        var password = document.getElementById('password').value;
+
+        // 判断用户名和密码是否均为“123”
+        if (userName === '123' && password === '123') {
+            // 跳转到userManagement界面
+            alert('登录成功！');
+            window.location.href = 'um_page';
+        } else {
+            alert('用户名或密码错误，请重新输入！');
+        }
+    });
+</script>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 4px;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+        }
+
+        .edit-btn {
+            background-color: #2196F3;
+        }
+
+        .confirm-btn, .cancel-btn, .save-btn {
+            background-color: #4CAF50;
+        }
+
+        /* 弹窗和覆盖层样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 250px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .modal-content input {
+            width: 90%;
+            padding: 8px;
+            margin: 8px 0;
+        }
+
+        .add-user {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .add-user input[type="text"] {
+            width: 45%;
+            padding: 8px;
+        }
+
+        .add-user button {
+            width: 10%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>用户管理系统</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>密码</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 示例数据 -->
+                <tr>
+                    <td>1</td>
+                    <td>123</td>
+                    <td>123</td>
+                    <td>
+                        <button class="edit-btn" onclick="openEditModal('1', 'admin', 'admin123')">更改</button>
+                        <button class="delete-btn" onclick="openConfirmModal('1')">删除</button>
+                    </td>
+                </tr>
+                <tbody id="userTableBody">
+            <!-- 数据将从后端获取并动态添加 -->
+            </tbody>
+        </table>
+        
+        <div class="add-user">
+            <input type="text" id="newUserName" placeholder="用户名">
+            <input type="text" id="newPassword" placeholder="密码">
+            <button class="confirm-btn" onclick="addUser()">添加</button>
+        </div>
+    </div>
+
+    <!-- 删除确认框 -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <p>确定要删除该用户吗？</p>
+            <button class="confirm-btn" onclick="confirmDelete()">确认</button>
+            <button class="cancel-btn" onclick="closeModal()">取消</button>
+        </div>
+    </div>
+
+    <!-- 编辑弹窗 -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content">
+            <input type="text" id="editUserName" placeholder="用户名">
+            <input type="text" id="editPassword" placeholder="密码">
+            <button class="save-btn" onclick="saveChanges()">保存</button>
+            <button class="cancel-btn" onclick="closeModal()">取消</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = null;
+
+        function openConfirmModal(userId) {
+            currentUserId = userId;
+            document.getElementById("confirmModal").style.display = "flex";
+        }
+
+        function openEditModal(userId, userName, password) {
+            currentUserId = userId;
+            document.getElementById("editUserName").value = userName;
+            document.getElementById("editPassword").value = password;
+            document.getElementById("editModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("confirmModal").style.display = "none";
+            document.getElementById("editModal").style.display = "none";
+        }
+
+        function confirmDelete() {
+            fetch('http://172.27.245.19:8888/userManagement/delete_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: currentUserId
+                }),
+            })
+                .then(response => {
+                    if (response.ok) {
+                        fetchUsers(); // 重新加载用户列表
+                    }
+                })
+                .catch(error => console.error('Error adding user:', error));
+            closeModal();
+            console.log(`删除用户: ${currentUserId}`);
+        }
+
+        function saveChanges() {
+            const userName = document.getElementById("editUserName").value;
+            const password = document.getElementById("editPassword").value;
+            fetch('http://172.27.245.19:8888/userManagement/update_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id:currentUserId,
+                    username:userName,
+                    password:password
+                }),
+            })
+                .then(response => {
+                    if (response.ok) {
+                        fetchUsers(); // 重新加载用户列表
+                    }
+                })
+                .catch(error => console.error('Error adding user:', error));
+            console.log(`保存更改: 用户ID: ${currentUserId}, 用户名: ${userName}, 密码: ${password}`);
+            closeModal();
+        }
+
+        // 页面加载时获取用户数据
+        window.onload = function() {
+            fetchUsers();
+        }
+
+        // 请求用户数据并展示在表格中
+        function fetchUsers() {
+            fetch('http://172.27.245.19:8888/userManagement/init_data')
+
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('userTableBody');
+                    tableBody.innerHTML = ''; // 清空表格内容
+
+                    data.forEach(user => {
+                        const row = `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.password}</td>
+                            <td>
+                                <button class="edit-btn" onclick="openEditModal('${user.id}', '${user.username}', '${user.password}')">更改</button>
+                                <button class="delete-btn" onclick="openConfirmModal('${user.id}')">删除</button>
+                            </td>
+                        </tr>
+                    `;
+                        tableBody.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error('Error fetching user data:', error));
+        }
+
+        // 添加用户
+        function addUser() {
+            const newUserName = document.getElementById('newUserName').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            fetch('http://172.27.245.19:8888/userManagement/add_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username:newUserName,
+                    password:newPassword
+                }),
+            })
+                .then(response => {
+                    if (response.ok) {
+                        fetchUsers(); // 重新加载用户列表
+                    }
+                })
+                .catch(error => console.error('Error adding user:', error));
+        }
+    </script>
+</body>
+</html>
